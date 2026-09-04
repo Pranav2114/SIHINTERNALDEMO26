@@ -1,6 +1,6 @@
-import React from 'react';
-import { Shield, Cpu, Activity, Database, FileText, Sparkles, MapPin, EyeOff, Eye } from 'lucide-react';
-import { UrbanEyeLogo, HackopesIcon, HackopesLogo } from './logos';
+import React, { useState, useEffect } from 'react';
+import { Database, Eye, EyeOff, AlertTriangle, ChevronRight, Map } from 'lucide-react';
+import { UrbanEyeLogo, HackopesIcon } from './logos';
 
 interface HaydenHeaderProps {
   activeTab: 'simulation' | 'gis' | 'admin' | 'features';
@@ -19,121 +19,168 @@ export const HaydenHeader: React.FC<HaydenHeaderProps> = ({
   onTogglePrivacyBlur,
   activeDefectsCount
 }) => {
-  return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-        {/* Application Logo: Urban Eye AI */}
-        <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => onChangeTab('simulation')}>
-          <UrbanEyeLogo size={42} />
-          
-          <div className="hidden sm:flex items-center gap-2 pl-2.5 border-l border-slate-200">
-            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-200/60 tracking-wide">
-              SIH PROTOTYPE
-            </span>
-          </div>
-        </div>
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-        {/* Navigation Tabs (Clean Minimalism pill navigation) */}
-        <nav className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-medium">
+  const navItems = [
+    { label: 'Overview', tab: 'simulation' as const },
+    { label: 'Command Center', tab: 'gis' as const, badge: activeDefectsCount > 0 ? String(activeDefectsCount) : undefined },
+    { label: 'Analytics', tab: 'admin' as const },
+    { label: 'Modules', tab: 'features' as const },
+  ];
+
+  return (
+    <>
+      <header className="fixed top-0 inset-x-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+
+          {/* ── LEFT: Logo ── */}
           <button
             onClick={() => onChangeTab('simulation')}
-            className={`px-3.5 py-1.5 rounded-lg transition-all ${
-              activeTab === 'simulation'
-                ? 'bg-white text-slate-900 shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className="flex items-center gap-3 select-none group flex-shrink-0"
           >
-            Vision AI 3D
-          </button>
-
-          <button
-            onClick={() => onChangeTab('admin')}
-            className={`px-3.5 py-1.5 rounded-lg transition-all relative ${
-              activeTab === 'admin'
-                ? 'bg-white text-slate-900 shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Admin & Warranty
-            <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[9px] bg-emerald-600 text-white font-bold">
-              NEW
-            </span>
-          </button>
-
-          <button
-            onClick={() => onChangeTab('gis')}
-            className={`px-3.5 py-1.5 rounded-lg transition-all relative ${
-              activeTab === 'gis'
-                ? 'bg-white text-slate-900 shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            GIS Command
-            {activeDefectsCount > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-rose-500 text-white font-bold">
-                {activeDefectsCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => onChangeTab('features')}
-            className={`px-3.5 py-1.5 rounded-lg transition-all ${
-              activeTab === 'features'
-                ? 'bg-white text-slate-900 shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            14-Module Spec
-          </button>
-        </nav>
-
-        {/* Right Tools, Team HackOpes Logo & Research Datasets Link */}
-        <div className="flex items-center gap-2.5">
-          {/* Team HackOpes Attribution Badge */}
-          <div 
-            className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-900 text-white border border-slate-800 shadow-xs hover:border-cyan-500/40 transition-colors cursor-default"
-            title="class Hackopes { creativeSolutions() } • Prototype Creators"
-          >
-            <HackopesIcon size={24} />
-            <div className="flex flex-col leading-none">
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-teal-300 tracking-wide">
-                  Hackopes
-                </span>
-                <span className="text-[8px] font-bold px-1 py-0.2 rounded bg-cyan-400/20 text-cyan-300 uppercase">
-                  Team
-                </span>
+            <UrbanEyeLogo size={34} />
+            <div className="hidden sm:block">
+              <div className="text-sm font-bold text-slate-900 tracking-tight leading-none">
+                Urban EYE AI
               </div>
-              <span className="text-[8px] font-mono text-slate-400 mt-0.5 hidden xl:inline">
-                class Hackopes &#123; creativeSolutions() &#125;
-              </span>
+              <div className="text-[10px] text-slate-400 mt-0.5">
+                Road Safety & Infrastructure
+              </div>
+            </div>
+          </button>
+
+          {/* ── CENTER: Desktop Nav ── */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map(({ label, tab, badge }) => (
+              <button
+                key={tab}
+                onClick={() => onChangeTab(tab)}
+                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  activeTab === tab
+                    ? 'text-sky-700 bg-sky-50 font-semibold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                {label}
+                {badge && (
+                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-red-500 text-white font-bold">
+                    {badge}
+                  </span>
+                )}
+                {activeTab === tab && (
+                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-sky-600 rounded-full" />
+                )}
+              </button>
+            ))}
+          </nav>
+
+          {/* ── RIGHT: Controls ── */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+
+            {/* HackOpes Attribution */}
+            <div
+              className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 cursor-default"
+              title="Team HackOpes · SIH 2026"
+            >
+              <HackopesIcon size={18} />
+              <div className="flex flex-col leading-none">
+                <span className="text-[10px] font-bold text-slate-700">Hackopes</span>
+                <span className="text-[9px] text-slate-400 mt-0.5">SIH 2026</span>
+              </div>
+            </div>
+
+            {/* Datasets Button */}
+            <button
+              onClick={onOpenDatasets}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-600 border border-slate-200 transition-colors"
+            >
+              <Database className="w-3.5 h-3.5 text-slate-500" />
+              Datasets
+            </button>
+
+            {/* DPDP Privacy Toggle */}
+            <button
+              onClick={onTogglePrivacyBlur}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                privacyBlur
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+              }`}
+              title="Toggle DPDP Act 2023 Privacy Anonymization"
+            >
+              {privacyBlur
+                ? <EyeOff className="w-3.5 h-3.5" />
+                : <Eye className="w-3.5 h-3.5" />
+              }
+              <span className="hidden sm:inline">DPDP</span>
+            </button>
+
+            {/* Command Center CTA */}
+            <button
+              onClick={() => onChangeTab('gis')}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-slate-900 hover:bg-slate-700 transition-colors"
+            >
+              <Map className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Command Center</span>
+              <span className="sm:hidden">Map</span>
+            </button>
+
+            {/* Mobile menu toggle */}
+            <button
+              className="md:hidden flex flex-col gap-1 p-2 text-slate-600"
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+            >
+              <span className={`block w-5 h-0.5 bg-current transition-all ${mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`} />
+              <span className={`block w-5 h-0.5 bg-current transition-all ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+              <span className={`block w-5 h-0.5 bg-current transition-all ${mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── MOBILE MENU ── */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-t border-slate-100 px-4 py-3 space-y-1">
+            {navItems.map(({ label, tab, badge }) => (
+              <button
+                key={tab}
+                onClick={() => { onChangeTab(tab); setMobileMenuOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === tab
+                    ? 'text-sky-700 bg-sky-50 font-semibold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                {label}
+                {badge && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded-full text-[10px] bg-red-500 text-white font-bold">
+                    {badge}
+                  </span>
+                )}
+              </button>
+            ))}
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={onOpenDatasets}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-50 text-xs font-medium text-slate-600 border border-slate-200"
+              >
+                <Database className="w-3.5 h-3.5" />
+                Datasets
+              </button>
+              <button
+                onClick={onTogglePrivacyBlur}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
+                  privacyBlur
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}
+              >
+                {privacyBlur ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                DPDP
+              </button>
             </div>
           </div>
-
-          <button
-            onClick={onOpenDatasets}
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 border border-slate-200 transition-colors"
-          >
-            <Database className="w-3.5 h-3.5 text-blue-600" />
-            <span>Datasets (RDD2022)</span>
-          </button>
-
-          <button
-            onClick={onTogglePrivacyBlur}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
-              privacyBlur
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                : 'bg-slate-100 border-slate-200 text-slate-600'
-            }`}
-            title="Toggle DPDP Act Privacy Blur"
-          >
-            {privacyBlur ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">DPDP Blur</span>
-          </button>
-        </div>
-      </div>
-    </header>
+        )}
+      </header>
+    </>
   );
 };
-

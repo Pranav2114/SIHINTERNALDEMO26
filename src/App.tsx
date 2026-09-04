@@ -5,14 +5,14 @@ import {
 } from './data/mockData';
 import { SimulationScene, ViolationType, RoadDefect } from './types';
 import { HaydenHeader } from './components/HaydenHeader';
-import { HaydenHeroSection } from './components/HaydenHeroSection';
+import { UrbanEyeLandingPage } from './components/UrbanEyeLandingPage';
 import { CentralGisDashboard } from './components/CentralGisDashboard';
 import { FeatureSpecificationSuite } from './components/FeatureSpecificationSuite';
 import { AdminCityAnalyticsPortal } from './components/AdminCityAnalyticsPortal';
 import { DatasetReferenceModal } from './components/DatasetReferenceModal';
 import { WorkOrderReportModal } from './components/WorkOrderReportModal';
 import { UrbanEyeLogo, HackopesLogo } from './components/logos';
-import { Sparkles, Shield, Database, Github, Cpu, ExternalLink } from 'lucide-react';
+import { Activity, Database, Shield } from 'lucide-react';
 
 export default function App() {
   const [currentSceneId, setCurrentSceneId] = useState<ViolationType>('road_defect');
@@ -27,17 +27,16 @@ export default function App() {
     setCurrentSceneId(sceneId);
   };
 
-  const handleSelectDefectFromMap = (defect: RoadDefect) => {
-    // We can also switch to simulation or view details
-  };
+  const handleSelectDefectFromMap = (defect: RoadDefect) => {};
 
   const handleOpenWorkOrder = (defect: RoadDefect) => {
     setSelectedDefectForWorkOrder(defect);
   };
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] text-slate-800 flex flex-col selection:bg-blue-600 selection:text-white font-sans">
-      {/* Top Header */}
+    <div className="min-h-screen bg-slate-50 text-slate-700 flex flex-col" style={{ fontFamily: "'Plus Jakarta Sans', 'Outfit', sans-serif" }}>
+
+      {/* ── NAVIGATION ── */}
       <HaydenHeader
         activeTab={activeTab}
         onChangeTab={setActiveTab}
@@ -47,10 +46,12 @@ export default function App() {
         activeDefectsCount={INITIAL_DEFECTS.filter(d => d.severity === 'high').length}
       />
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+      {/* ── MAIN CONTENT ── */}
+      <main className="flex-1 pt-16">
+
+        {/* INTELLIGENCE TAB */}
         {activeTab === 'simulation' && (
-          <HaydenHeroSection
+          <UrbanEyeLandingPage
             currentScene={currentScene}
             onSelectScene={handleSelectScene}
             privacyBlur={privacyBlur}
@@ -62,8 +63,36 @@ export default function App() {
           />
         )}
 
+        {/* ANALYTICS TAB */}
         {activeTab === 'admin' && (
-          <div className="space-y-6">
+          <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2.5 py-1 rounded-md bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold">
+                    Analytics Portal
+                  </span>
+                  <div className="status-indicator text-xs">
+                    <span className="dot" />
+                    Live Data
+                  </div>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                  City Warranty Audit & Resource Planning
+                </h1>
+                <p className="text-sm text-slate-500 mt-1">
+                  Contractor DLP management · Hotspot analysis · Penalty recovery · Infrastructure planning
+                </p>
+              </div>
+              <button
+                onClick={() => setIsDatasetModalOpen(true)}
+                className="btn-outline text-sm"
+              >
+                <Database className="w-4 h-4" />
+                Research Datasets
+              </button>
+            </div>
             <AdminCityAnalyticsPortal
               defects={INITIAL_DEFECTS}
               hotspots={CITY_HOTSPOTS}
@@ -76,31 +105,36 @@ export default function App() {
           </div>
         )}
 
+        {/* COMMAND CENTER TAB */}
         {activeTab === 'gis' && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
               <div>
-                <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
-                  FEATURE 13 • CENTRALIZED GIS DASHBOARD
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
-                  Fleet Spatial Telemetry & Defect Command
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2.5 py-1 rounded-md bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold">
+                    Live Command Center
+                  </span>
+                  <div className="status-indicator text-xs">
+                    <span className="dot" />
+                    Streaming
+                  </div>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                  Urban Intelligence Command Center
                 </h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Aggregating transit bus edge cameras, CCTV junctions, and sensor anomaly feeds
+                <p className="text-sm text-slate-500 mt-1">
+                  Fleet spatial telemetry · Traffic density analysis · Road defect mapping · Emergency dispatch
                 </p>
               </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsDatasetModalOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 border border-slate-200 shadow-sm transition-colors"
-                >
-                  Inspect Research Datasets
-                </button>
-              </div>
+              <button
+                onClick={() => setIsDatasetModalOpen(true)}
+                className="btn-outline text-sm"
+              >
+                <Database className="w-4 h-4" />
+                Inspect Datasets
+              </button>
             </div>
-
             <CentralGisDashboard
               defects={INITIAL_DEFECTS}
               fleet={FLEET_BUSES}
@@ -110,20 +144,25 @@ export default function App() {
           </div>
         )}
 
+        {/* MODULES TAB */}
         {activeTab === 'features' && (
-          <div className="space-y-6">
-            <div className="pb-4 border-b border-slate-200">
-              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
-                FEATURE SPECIFICATION DOCUMENT
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
-                All 14 Modules Interactive Technical Suite
+          <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            <div className="pb-6 border-b border-slate-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2.5 py-1 rounded-md bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold">
+                  Technical Specification
+                </span>
+                <span className="px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
+                  SIH 2026
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                All 14 AI Modules — Technical Specification
               </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Full functional implementation of the Smart India Hackathon specification requirements
+              <p className="text-sm text-slate-500 mt-1">
+                Full implementation of Smart India Hackathon 2026 specification requirements
               </p>
             </div>
-
             <FeatureSpecificationSuite
               onOpenDatasets={() => setIsDatasetModalOpen(true)}
             />
@@ -131,53 +170,54 @@ export default function App() {
         )}
       </main>
 
-      {/* Official Footnote / Hackathon Credits */}
+      {/* ── FOOTER ── */}
       <footer className="w-full border-t border-slate-200 bg-white py-8 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-100">
-            {/* Left: Urban Eye AI application logo & info */}
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+            <div className="flex items-center gap-4">
               <UrbanEyeLogo size={36} />
-              <div className="hidden sm:block pl-3 border-l border-slate-200 text-left">
-                <div className="text-xs font-semibold text-slate-800">
-                  Smart India Hackathon (SIH) Prototype
-                </div>
-                <div className="text-[11px] text-slate-500">
-                  Automated Transit Vision & Municipal Road Safety Platform
-                </div>
+              <div>
+                <div className="text-sm font-bold text-slate-900 tracking-wide">Urban EYE AI</div>
+                <div className="text-xs text-slate-500 mt-0.5">AI That Sees. Cities That Respond.</div>
+                <div className="text-xs text-slate-400 mt-0.5">Smart India Hackathon 2026 · SIH Prototype</div>
               </div>
             </div>
-
-            {/* Right: Team HackOpes Logo & Tagline */}
-            <div className="flex items-center gap-3 bg-slate-900 text-white px-4 py-2.5 rounded-2xl border border-slate-800 shadow-sm">
-              <HackopesLogo size={34} showTagline={true} layout="horizontal" theme="dark" />
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50">
+              <HackopesLogo size={32} showTagline={true} layout="horizontal" theme="light" />
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3 text-slate-400">
               <span>RDD2022 / CRACK500 Benchmark</span>
               <span>•</span>
               <span>IISc UVH-26 & BMD-45</span>
               <span>•</span>
-              <span>CPWD Schedule of Rates 2024</span>
+              <span>CPWD SoR 2024</span>
               <span>•</span>
               <span>DPDP Act 2023 Compliant</span>
+              <span>•</span>
+              <span>IRC:SP:77</span>
             </div>
+            <div className="text-slate-400 text-xs flex-shrink-0">
+              Built by Team HackOpes
+            </div>
+          </div>
 
-            <div className="font-mono text-slate-400 text-[10px]">
-              Built with precision by Team HackOpes
-            </div>
+          <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-100 bg-amber-50">
+            <Activity className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 leading-relaxed">
+              <strong>Prototype Notice:</strong> All AI detections, sensor readings, fleet data, and analytics shown are simulated demo data for SIH 2026 prototype demonstration only. Not live government or municipal data.
+            </p>
           </div>
         </div>
       </footer>
 
-      {/* Modals */}
+      {/* ── MODALS ── */}
       <DatasetReferenceModal
         isOpen={isDatasetModalOpen}
         onClose={() => setIsDatasetModalOpen(false)}
       />
-
       <WorkOrderReportModal
         defect={selectedDefectForWorkOrder}
         onClose={() => setSelectedDefectForWorkOrder(null)}

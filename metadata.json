@@ -1,6 +1,6 @@
 {
   "name": "MargDrishti AI - Road Safety & Infrastructure Platform",
-  "description": "Smart India Hackathon prototype for AI-powered road safety, defect detection, and transit enforcement with Hayden AI-style 3D vision simulation, GIS command center, and multi-modal sensor fusion.",
+  "description": "Urban Eye AI: Smart India Hackathon prototype for AI-powered road safety, defect detection, and transit enforcement built by Team HackOpes.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

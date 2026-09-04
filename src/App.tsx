@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { SIMULATION_SCENES, INITIAL_DEFECTS, FLEET_BUSES } from './data/mockData';
+import { 
+  SIMULATION_SCENES, INITIAL_DEFECTS, FLEET_BUSES, 
+  CITY_HOTSPOTS, INFRASTRUCTURE_RECOMMENDATIONS, PENALTY_STATS, EMERGENCY_DISPATCH_LOGS 
+} from './data/mockData';
 import { SimulationScene, ViolationType, RoadDefect } from './types';
 import { HaydenHeader } from './components/HaydenHeader';
 import { HaydenHeroSection } from './components/HaydenHeroSection';
 import { CentralGisDashboard } from './components/CentralGisDashboard';
 import { FeatureSpecificationSuite } from './components/FeatureSpecificationSuite';
+import { AdminCityAnalyticsPortal } from './components/AdminCityAnalyticsPortal';
 import { DatasetReferenceModal } from './components/DatasetReferenceModal';
 import { WorkOrderReportModal } from './components/WorkOrderReportModal';
+import { UrbanEyeLogo, HackopesLogo } from './components/logos';
 import { Sparkles, Shield, Database, Github, Cpu, ExternalLink } from 'lucide-react';
 
 export default function App() {
   const [currentSceneId, setCurrentSceneId] = useState<ViolationType>('road_defect');
-  const [activeTab, setActiveTab] = useState<'simulation' | 'gis' | 'features'>('simulation');
+  const [activeTab, setActiveTab] = useState<'simulation' | 'gis' | 'admin' | 'features'>('simulation');
   const [privacyBlur, setPrivacyBlur] = useState<boolean>(true);
   const [isDatasetModalOpen, setIsDatasetModalOpen] = useState<boolean>(false);
   const [selectedDefectForWorkOrder, setSelectedDefectForWorkOrder] = useState<RoadDefect | null>(null);
@@ -51,9 +56,24 @@ export default function App() {
             privacyBlur={privacyBlur}
             onTogglePrivacyBlur={() => setPrivacyBlur(!privacyBlur)}
             onOpenGis={() => setActiveTab('gis')}
+            onOpenAdmin={() => setActiveTab('admin')}
             onOpenFeatures={() => setActiveTab('features')}
             onOpenDatasets={() => setIsDatasetModalOpen(true)}
           />
+        )}
+
+        {activeTab === 'admin' && (
+          <div className="space-y-6">
+            <AdminCityAnalyticsPortal
+              defects={INITIAL_DEFECTS}
+              hotspots={CITY_HOTSPOTS}
+              infrastructureRecs={INFRASTRUCTURE_RECOMMENDATIONS}
+              penaltyStats={PENALTY_STATS}
+              emergencyDispatches={EMERGENCY_DISPATCH_LOGS}
+              onSelectDefect={handleSelectDefectFromMap}
+              onIssueWorkOrder={handleOpenWorkOrder}
+            />
+          </div>
         )}
 
         {activeTab === 'gis' && (
@@ -112,21 +132,42 @@ export default function App() {
       </main>
 
       {/* Official Footnote / Hackathon Credits */}
-      <footer className="w-full border-t border-slate-200 bg-white py-6 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-slate-700 font-medium">
-            <Cpu className="w-4 h-4 text-blue-600" />
-            <span>MargDrishti AI • Smart India Hackathon (SIH) Prototype</span>
+      <footer className="w-full border-t border-slate-200 bg-white py-8 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-100">
+            {/* Left: Urban Eye AI application logo & info */}
+            <div className="flex items-center gap-3">
+              <UrbanEyeLogo size={36} />
+              <div className="hidden sm:block pl-3 border-l border-slate-200 text-left">
+                <div className="text-xs font-semibold text-slate-800">
+                  Smart India Hackathon (SIH) Prototype
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Automated Transit Vision & Municipal Road Safety Platform
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Team HackOpes Logo & Tagline */}
+            <div className="flex items-center gap-3 bg-slate-900 text-white px-4 py-2.5 rounded-2xl border border-slate-800 shadow-sm">
+              <HackopesLogo size={34} showTagline={true} layout="horizontal" theme="dark" />
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-400">
-            <span>RDD2022 / CRACK500</span>
-            <span>•</span>
-            <span>IISc UVH-26 & BMD-45</span>
-            <span>•</span>
-            <span>CPWD Schedule of Rates 2024</span>
-            <span>•</span>
-            <span>DPDP Act 2023 Compliant</span>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
+            <div className="flex flex-wrap items-center gap-3">
+              <span>RDD2022 / CRACK500 Benchmark</span>
+              <span>•</span>
+              <span>IISc UVH-26 & BMD-45</span>
+              <span>•</span>
+              <span>CPWD Schedule of Rates 2024</span>
+              <span>•</span>
+              <span>DPDP Act 2023 Compliant</span>
+            </div>
+
+            <div className="font-mono text-slate-400 text-[10px]">
+              Built with precision by Team HackOpes
+            </div>
           </div>
         </div>
       </footer>

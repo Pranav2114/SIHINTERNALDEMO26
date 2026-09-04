@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { 
   MapPin, AlertTriangle, Bus, Shield, Eye, Layers, Filter, CheckCircle2, 
-  Clock, ArrowUpRight, Search, FileSpreadsheet, Activity, ChevronRight 
+  Clock, ArrowUpRight, Search, FileSpreadsheet, Activity, ChevronRight,
+  Flame, Sliders, Radio, Sparkles, RefreshCw
 } from 'lucide-react';
 import { RoadDefect, FleetBus, DefectType } from '../types';
+import { D3GisHeatmapLayer, HeatmapDataPoint } from './D3GisHeatmapLayer';
 
 interface CentralGisDashboardProps {
   defects: RoadDefect[];
@@ -23,6 +25,13 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedDefect, setFocusedDefect] = useState<RoadDefect | null>(defects[0] || null);
 
+  // D3 Heatmap Layer Specific State
+  const [heatmapMode, setHeatmapMode] = useState<'traffic' | 'incidents' | 'combined'>('traffic');
+  const [heatmapOpacity, setHeatmapOpacity] = useState<number>(0.8);
+  const [heatmapBandwidth, setHeatmapBandwidth] = useState<number>(32);
+  const [isHeatmapLive, setIsHeatmapLive] = useState<boolean>(true);
+  const [selectedHotspot, setSelectedHotspot] = useState<HeatmapDataPoint | null>(null);
+
   const filteredDefects = defects.filter(d => {
     const matchSeverity = selectedSeverity === 'all' || d.severity === selectedSeverity;
     const matchSearch = d.roadName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -30,6 +39,8 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
                         d.id.toLowerCase().includes(searchQuery.toLowerCase());
     return matchSeverity && matchSearch;
   });
+
+  const isHeatmapVisible = activeLayer === 'all' || activeLayer === 'heatmaps';
 
   return (
     <div className="space-y-6">
@@ -53,11 +64,12 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
         </div>
 
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-          <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Avg Pavement Health (PCI)</div>
-          <div className="text-2xl font-bold text-emerald-600">
-            78.4<span className="text-sm font-normal text-slate-500 ml-1">/ 100</span>
+          <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">D3 Real-Time Density</div>
+          <div className="text-2xl font-bold text-amber-600 flex items-center gap-1.5">
+            <Flame className="w-5 h-5 text-rose-500 animate-pulse" />
+            <span>88% Peak</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">IRC:82 Condition Standard</div>
+          <div className="text-[11px] text-slate-400 mt-1">Silk Board & ORR Hotspots</div>
         </div>
 
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
@@ -81,7 +93,7 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
                 Bengaluru Transit Corridor GIS
               </span>
               <span className="text-xs font-medium text-slate-600 px-2 py-0.5 rounded bg-slate-100 border border-slate-200">
-                PostGIS + Bhuvan Layer
+                PostGIS + D3 Dynamic Heatmap
               </span>
             </div>
 
@@ -91,7 +103,14 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
                   onClick={() => setActiveLayer('all')}
                   className={`px-2.5 py-1 rounded transition-colors ${activeLayer === 'all' ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                 >
-                  All
+                  All Layers
+                </button>
+                <button
+                  onClick={() => setActiveLayer('heatmaps')}
+                  className={`px-2.5 py-1 rounded transition-colors flex items-center gap-1 ${activeLayer === 'heatmaps' ? 'bg-rose-600 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  <Flame className="w-3 h-3" />
+                  <span>D3 Heatmap</span>
                 </button>
                 <button
                   onClick={() => setActiveLayer('defects')}
@@ -108,6 +127,94 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
               </div>
             </div>
           </div>
+
+          {/* D3 Heatmap Configuration Sub-Bar (When Heatmap is Visible) */}
+          {isHeatmapVisible && (
+            <div className="my-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+              {/* Metric Type Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                  <Flame className="w-3.5 h-3.5 text-rose-500" />
+                  Heatmap Mode:
+                </span>
+                <div className="flex bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs text-[11px]">
+                  <button
+                    onClick={() => setHeatmapMode('traffic')}
+                    className={`px-2 py-0.5 rounded font-semibold transition-all ${
+                      heatmapMode === 'traffic'
+                        ? 'bg-rose-500 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Peak Traffic Density
+                  </button>
+                  <button
+                    onClick={() => setHeatmapMode('incidents')}
+                    className={`px-2 py-0.5 rounded font-semibold transition-all ${
+                      heatmapMode === 'incidents'
+                        ? 'bg-amber-500 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Incident Frequency Hotspots
+                  </button>
+                  <button
+                    onClick={() => setHeatmapMode('combined')}
+                    className={`px-2 py-0.5 rounded font-semibold transition-all ${
+                      heatmapMode === 'combined'
+                        ? 'bg-blue-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Combined Multi-Risk
+                  </button>
+                </div>
+              </div>
+
+              {/* Bandwidth & Opacity Sliders & Live Stream Toggle */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                  <span className="text-slate-400">Radius:</span>
+                  <select
+                    value={heatmapBandwidth}
+                    onChange={(e) => setHeatmapBandwidth(Number(e.target.value))}
+                    className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-700 font-medium text-[11px]"
+                  >
+                    <option value={24}>Tight (24px)</option>
+                    <option value={32}>Standard (32px)</option>
+                    <option value={44}>Wide (44px)</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                  <span className="text-slate-400">Opacity:</span>
+                  <input
+                    type="range"
+                    min={0.3}
+                    max={1}
+                    step={0.1}
+                    value={heatmapOpacity}
+                    onChange={(e) => setHeatmapOpacity(Number(e.target.value))}
+                    className="w-16 accent-rose-500 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                  />
+                  <span className="font-mono text-[10px] text-slate-500">{Math.round(heatmapOpacity * 100)}%</span>
+                </div>
+
+                <button
+                  onClick={() => setIsHeatmapLive(!isHeatmapLive)}
+                  className={`px-2 py-0.5 rounded-lg border text-[11px] font-bold flex items-center gap-1 transition-all ${
+                    isHeatmapLive
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                      : 'bg-slate-200 border-slate-300 text-slate-600'
+                  }`}
+                  title="Toggle 1Hz Real-Time Stream updates"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${isHeatmapLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                  <span>{isHeatmapLive ? 'LIVE 1Hz' : 'PAUSED'}</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Interactive Visual Map Canvas / Vector Map */}
           <div className="relative w-full h-[480px] bg-[#0F172A] rounded-xl my-3 overflow-hidden border border-slate-200 flex items-center justify-center">
@@ -165,28 +272,33 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
                 strokeWidth="2"
                 strokeDasharray="8 6"
               />
-
-              {/* Congestion Hotspot Heatmap Circles */}
-              <circle cx="320" cy="190" r="65" fill="#f43f5e" opacity="0.16" />
-              <circle cx="320" cy="190" r="35" fill="#f43f5e" opacity="0.32" />
-              <circle cx="560" cy="170" r="45" fill="#eab308" opacity="0.22" />
             </svg>
 
             {/* Geographical Landmarks in Bengaluru */}
-            <div className="absolute top-12 left-12 text-[11px] font-mono text-slate-500 pointer-events-none">
+            <div className="absolute top-12 left-12 text-[11px] font-mono text-slate-500 pointer-events-none z-10">
               Indiranagar 100ft Corridor
             </div>
-            <div className="absolute bottom-16 left-1/3 text-[11px] font-mono text-slate-500 pointer-events-none">
+            <div className="absolute bottom-16 left-1/3 text-[11px] font-mono text-slate-500 pointer-events-none z-10">
               Silk Board Junction (Bottleneck Zone)
             </div>
-            <div className="absolute top-16 right-16 text-[11px] font-mono text-slate-500 pointer-events-none">
+            <div className="absolute top-16 right-16 text-[11px] font-mono text-slate-500 pointer-events-none z-10">
               Bellandur Tech Corridor / ORR
             </div>
+
+            {/* D3 CONTOUR DENSITY HEATMAP LAYER */}
+            {isHeatmapVisible && (
+              <D3GisHeatmapLayer
+                mode={heatmapMode}
+                bandwidth={heatmapBandwidth}
+                opacity={heatmapOpacity}
+                isLiveStream={isHeatmapLive}
+                onSelectHotspot={(hotspot) => setSelectedHotspot(hotspot)}
+              />
+            )}
 
             {/* Interactive Defect Pins */}
             {(activeLayer === 'all' || activeLayer === 'defects') &&
               filteredDefects.map((defect, idx) => {
-                // Approximate pin placement based on index/coordinates for visual canvas
                 const pinPositions = [
                   { left: '42%', top: '38%' },
                   { left: '68%', top: '35%' },
@@ -203,20 +315,21 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
                     key={defect.id}
                     onClick={() => {
                       setFocusedDefect(defect);
+                      setSelectedHotspot(null);
                       onSelectDefect(defect);
                     }}
                     style={{ left: pos.left, top: pos.top }}
-                    className={`absolute -translate-x-1/2 -translate-y-1/2 z-20 group transition-transform ${
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 z-25 group transition-transform ${
                       isSelected ? 'scale-125 z-30' : 'hover:scale-110'
                     }`}
                   >
                     <div
                       className={`relative p-2 rounded-full shadow-lg flex items-center justify-center border ${
                         defect.severity === 'high'
-                          ? 'bg-rose-500/20 border-rose-500 text-rose-400'
+                          ? 'bg-rose-500/30 border-rose-500 text-rose-300'
                           : defect.severity === 'medium'
-                          ? 'bg-amber-500/20 border-amber-500 text-amber-400'
-                          : 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                          ? 'bg-amber-500/30 border-amber-500 text-amber-300'
+                          : 'bg-emerald-500/30 border-emerald-500 text-emerald-300'
                       }`}
                     >
                       <AlertTriangle className="w-4 h-4" />
@@ -253,7 +366,7 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
                   <div
                     key={bus.id}
                     style={{ left: bPos.left, top: bPos.top }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 z-10 flex items-center gap-1.5 px-2 py-1 rounded-full bg-cyan-500 text-black font-mono text-[11px] font-bold shadow-md cursor-pointer hover:scale-105 transition-all"
+                    className="absolute -translate-x-1/2 -translate-y-1/2 z-25 flex items-center gap-1.5 px-2 py-1 rounded-full bg-cyan-500 text-black font-mono text-[11px] font-bold shadow-md cursor-pointer hover:scale-105 transition-all"
                   >
                     <Bus className="w-3.5 h-3.5" />
                     <span>{bus.routeNumber}</span>
@@ -262,25 +375,93 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
               })}
           </div>
 
-          {/* Map Footer Legend */}
-          <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <div className="flex items-center gap-4 font-medium">
+          {/* Map Footer Legend with D3 Density Scale */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <div className="flex flex-wrap items-center gap-4 font-medium">
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> High Severity Pothole
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> High Severity Defect
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Medium Alligator Crack
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Bus Edge Stream
               </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Active Bus with Edge AI
-              </span>
+
+              {/* D3 Heatmap Color Scale Bar */}
+              {isHeatmapVisible && (
+                <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+                  <span className="text-[11px] text-slate-400 font-medium">D3 Density:</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-slate-400">Low</span>
+                    <div className="w-20 h-2.5 rounded-full bg-gradient-to-r from-cyan-400 via-amber-400 to-rose-600 shadow-2xs border border-slate-300/60" />
+                    <span className="text-[10px] text-rose-600 font-bold">Critical</span>
+                  </div>
+                </div>
+              )}
             </div>
-            <span className="text-slate-400">GPS Stream: ISRO Bhuvan GIS Synchronized</span>
+
+            <span className="text-slate-400 text-[11px]">
+              Kernel: D3 ContourDensity • 1Hz Real-Time Ingestion
+            </span>
           </div>
         </div>
 
         {/* Right Column: Defect Inspector & Work Order Trigger */}
         <div className="lg:col-span-4 space-y-4">
+          {/* If a D3 Hotspot was clicked, show its rich analytics */}
+          {selectedHotspot && (
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl border border-slate-700 shadow-lg p-5 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-bold text-amber-400 tracking-wider uppercase flex items-center gap-1">
+                    <Flame className="w-3.5 h-3.5 text-rose-400" />
+                    D3 HEATMAP HOTSPOT INSPECTOR
+                  </span>
+                  <h4 className="text-base font-bold text-white mt-1">
+                    {selectedHotspot.name}
+                  </h4>
+                  <p className="text-xs text-slate-400">{selectedHotspot.corridorType}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedHotspot(null)}
+                  className="text-slate-400 hover:text-white text-xs font-bold px-1.5 py-0.5 rounded bg-slate-800"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 py-2 px-3 rounded-xl bg-slate-800/80 border border-slate-700 text-center font-mono">
+                <div>
+                  <div className="text-[9px] uppercase font-bold text-slate-400">DENSITY</div>
+                  <div className="text-base font-black text-rose-400">
+                    {Math.round(selectedHotspot.trafficDensity * 100)}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[9px] uppercase font-bold text-slate-400">AVG SPEED</div>
+                  <div className="text-base font-bold text-slate-200">{selectedHotspot.avgSpeedKmH} km/h</div>
+                </div>
+                <div>
+                  <div className="text-[9px] uppercase font-bold text-slate-400">LOS</div>
+                  <div className="text-base font-black text-amber-400">{selectedHotspot.levelOfService}</div>
+                </div>
+              </div>
+
+              <div className="text-xs space-y-1.5 pt-1 text-slate-300">
+                <div className="flex justify-between border-b border-slate-700/60 pb-1">
+                  <span className="text-slate-400">Incident Frequency:</span>
+                  <span className="font-bold text-amber-300">{selectedHotspot.incidentCount} cases / 90 days</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-700/60 pb-1">
+                  <span className="text-slate-400">Congestion Delay:</span>
+                  <span className="font-semibold text-rose-300">+22 mins peak delay</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Action:</span>
+                  <span className="text-blue-300 font-medium">Dynamic Preemption & Resurfacing</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Selected Defect Detail Card */}
           {focusedDefect ? (
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
@@ -366,7 +547,7 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
             </div>
           ) : (
             <div className="p-8 rounded-2xl bg-white border border-slate-200 shadow-sm text-center text-slate-500 text-sm">
-              Click any defect pin on the map to inspect telemetry
+              Click any defect pin or heatmap hotspot on the map to inspect telemetry
             </div>
           )}
 
@@ -396,6 +577,7 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
                   key={d.id}
                   onClick={() => {
                     setFocusedDefect(d);
+                    setSelectedHotspot(null);
                     onSelectDefect(d);
                   }}
                   className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${
@@ -425,3 +607,4 @@ export const CentralGisDashboard: React.FC<CentralGisDashboardProps> = ({
     </div>
   );
 };
+

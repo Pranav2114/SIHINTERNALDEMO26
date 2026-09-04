@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { SimulationScene, ViolationType } from '../types';
 import { HaydenSimulationCanvas } from './HaydenSimulationCanvas';
+import { HackopesIcon, UrbanEyeIcon } from './logos';
 
 interface HaydenHeroSectionProps {
   currentScene: SimulationScene;
@@ -14,6 +15,7 @@ interface HaydenHeroSectionProps {
   onOpenGis: () => void;
   onOpenFeatures: () => void;
   onOpenDatasets: () => void;
+  onOpenAdmin?: () => void;
 }
 
 export const HaydenHeroSection: React.FC<HaydenHeroSectionProps> = ({
@@ -23,7 +25,8 @@ export const HaydenHeroSection: React.FC<HaydenHeroSectionProps> = ({
   onTogglePrivacyBlur,
   onOpenGis,
   onOpenFeatures,
-  onOpenDatasets
+  onOpenDatasets,
+  onOpenAdmin
 }) => {
   return (
     <div className="space-y-12">
@@ -31,9 +34,15 @@ export const HaydenHeroSection: React.FC<HaydenHeroSectionProps> = ({
       <div className="relative pt-2 sm:pt-4">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-8">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-4">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              SMART INDIA HACKATHON PROTOTYPE • CLEAN MINIMALISM
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 text-white text-xs font-semibold mb-4 border border-slate-800 shadow-xs">
+              <HackopesIcon size={18} />
+              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-teal-300">
+                Team HackOpes
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-slate-300 font-mono text-[11px]">
+                Smart India Hackathon Prototype
+              </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
@@ -56,6 +65,16 @@ export const HaydenHeroSection: React.FC<HaydenHeroSectionProps> = ({
                 <ArrowRight className="w-4 h-4" />
               </button>
 
+              {onOpenAdmin && (
+                <button
+                  onClick={onOpenAdmin}
+                  className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold tracking-wide shadow-sm transition-all flex items-center gap-2"
+                >
+                  <span>Admin & Warranty Portal</span>
+                  <ChevronRight className="w-4 h-4 text-emerald-200" />
+                </button>
+              )}
+
               <button
                 onClick={onOpenFeatures}
                 className="px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold border border-slate-200 shadow-sm transition-all flex items-center gap-2"
@@ -70,7 +89,10 @@ export const HaydenHeroSection: React.FC<HaydenHeroSectionProps> = ({
           <div className="relative w-full sm:w-auto">
             <div className="p-6 rounded-2xl bg-[#1E293B] shadow-xl text-white flex flex-col justify-between w-full sm:w-72 h-64 border border-slate-700/60">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">EDGE PERCEPTION</span>
+                <div className="flex items-center gap-1.5">
+                  <UrbanEyeIcon size={22} />
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-slate-300">URBAN EYE AI</span>
+                </div>
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
               </div>
 
